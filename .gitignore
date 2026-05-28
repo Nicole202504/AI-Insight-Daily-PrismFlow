@@ -10,5 +10,3 @@ src/plugins/custom
 *.sqlite
 data/
 .DS_Store
-
-*.tsbuildinfo

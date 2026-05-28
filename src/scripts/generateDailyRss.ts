@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { GeminiProvider } from '../services/AIProvider.js';
+import { GeminiProvider, OpenAIProvider } from '../services/AIProvider.js';
 import { ApimartGeminiProvider } from '../services/daily/ApimartGeminiProvider.js';
 import { generateDailyMarkdown } from '../services/daily/RssDailyService.js';
 import { DEFAULT_DAILY_RSS_SOURCES } from '../services/daily/rssDailySources.js';
@@ -14,7 +14,17 @@ function hasFlag(name: string): boolean {
   return process.argv.includes(`--${name}`);
 }
 
-function createGeminiProvider() {
+function createAiProvider() {
+  const preferredProvider = (process.env.DAILY_AI_PROVIDER || '').toLowerCase();
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if ((preferredProvider === 'openai' || preferredProvider === 'gpt') && openaiKey) {
+    return new OpenAIProvider(
+      process.env.OPENAI_API_URL || 'https://api.openai.com',
+      openaiKey,
+      process.env.OPENAI_MODEL || 'gpt-4.1-mini'
+    );
+  }
+
   const apimartKey = process.env.APIMART_API_KEY;
   if (apimartKey) {
     return new ApimartGeminiProvider(
@@ -40,14 +50,14 @@ async function main() {
   const dryRun = hasFlag('dry-run');
   const noAi = hasFlag('no-ai');
   const noImages = hasFlag('no-images');
-  const summaryLimit = Number(getArg('summary-limit') || process.env.DAILY_SUMMARY_LIMIT || '999');
+  const summaryLimit = Number(getArg('summary-limit') || process.env.DAILY_SUMMARY_LIMIT || '40');
   const maxAgeDays = Number(getArg('max-age-days') || '3');
   const assetsRootDir = getArg('assets-dir') || process.env.DAILY_ASSETS_DIR || 'daily-assets';
   const imageMarkdownPrefix = getArg('image-prefix') || process.env.DAILY_IMAGE_PREFIX || '/daily-assets';
 
-  const aiProvider = noAi ? undefined : createGeminiProvider();
+  const aiProvider = noAi ? undefined : createAiProvider();
   if (!aiProvider && !noAi) {
-    console.warn('[daily:rss] APIMART_API_KEY/GEMINI_API_KEY not set; generating without AI summaries. Use --no-ai to silence this.');
+    console.warn('[daily:rss] OPENAI_API_KEY/APIMART_API_KEY/GEMINI_API_KEY not set; generating without AI summaries. Use --no-ai to silence this.');
   }
 
   const result = await generateDailyMarkdown({

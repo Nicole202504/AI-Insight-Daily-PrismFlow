@@ -15,9 +15,12 @@ concurrency:
 
 env:
   TZ: Asia/Shanghai
+  DAILY_AI_PROVIDER: openai
+  OPENAI_API_URL: https://api.openai.com
+  OPENAI_MODEL: gpt-4.1-mini
   APIMART_BASE_URL: https://api.apimart.ai/v1beta
   APIMART_MODEL: gemini-3.5-flash
-  DAILY_SUMMARY_LIMIT: "999"
+  DAILY_SUMMARY_LIMIT: "40"
   DAILY_ASSETS_DIR: daily-assets
   DAILY_IMAGE_PREFIX: /daily-assets
 
@@ -39,6 +42,7 @@ jobs:
 
       - name: Generate daily markdown
         env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           APIMART_API_KEY: ${{ secrets.APIMART_API_KEY }}
         run: |
           DATE=$(TZ=Asia/Shanghai date +%F)
