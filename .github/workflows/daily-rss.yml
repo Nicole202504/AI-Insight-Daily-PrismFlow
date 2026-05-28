@@ -1,0 +1,54 @@
+name: Generate AI Daily
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 07:00 Asia/Shanghai
+    - cron: "0 23 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-rss
+  cancel-in-progress: false
+
+env:
+  TZ: Asia/Shanghai
+  APIMART_BASE_URL: https://api.apimart.ai/v1beta
+  APIMART_MODEL: gemini-3.5-flash
+  DAILY_SUMMARY_LIMIT: "999"
+  DAILY_ASSETS_DIR: daily-assets
+  DAILY_IMAGE_PREFIX: /daily-assets
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate daily markdown
+        env:
+          APIMART_API_KEY: ${{ secrets.APIMART_API_KEY }}
+        run: |
+          DATE=$(TZ=Asia/Shanghai date +%F)
+          npm run daily:rss -- --date="$DATE" --max-age-days=3
+
+      - name: Commit generated content
+        run: |
+          DATE=$(TZ=Asia/Shanghai date +%F)
+          git config user.name "ai-daily-bot"
+          git config user.email "actions@github.com"
+          git add daily daily-assets
+          git diff --cached --quiet || git commit -m "daily: update $DATE"
+          git push

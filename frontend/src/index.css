@@ -1,0 +1,387 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@config "../tailwind.config.js";
+
+@theme {
+  --font-sans: 'Inter', 'Noto Sans SC', sans-serif;
+  --font-display: 'Inter', 'Noto Sans SC', sans-serif;
+  --font-body: 'Inter', 'Noto Sans SC', sans-serif;
+
+  --color-primary: #0cafcf;
+  --color-background-light: #f5f8f8;
+  --color-background-dark: #101f22;
+  --color-surface-dark: #16292d;
+  --color-surface-dark-lighter: #1c3439;
+  --color-surface-darker: #0d1a1c;
+  --color-border-dark: #2a4045;
+  --color-text-secondary: #90c1cb;
+  --color-accent-success: #0bda54;
+  --color-accent-warning: #fbbf24;
+  --color-accent-error: #ef4444;
+
+  --animate-ping-slow: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@layer base {
+  body {
+    @apply bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white transition-colors duration-300;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-background-light dark:bg-background-dark;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-border-dark rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400 dark:bg-surface-dark-lighter;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar,
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-size: 24px;
+}
+.material-symbols-outlined.fill {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.material-symbols-outlined.text-xs {
+  font-size: 0.75rem !important;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.preview-html-content {
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.preview-html-content img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+.preview-html-content video {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+.preview-html-content a {
+  color: #0cafcf;
+  text-decoration: underline;
+}
+
+.preview-html-content p {
+  margin-bottom: 0.75rem;
+}
+
+.preview-html-content ul {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.preview-html-content ol {
+  list-style-type: decimal;
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.preview-html-content li {
+  margin-bottom: 0.5rem;
+}
+
+.preview-html-content h1 { @apply text-2xl font-bold mt-6 mb-4; }
+.preview-html-content h2 { @apply text-xl font-bold mt-5 mb-3; }
+.preview-html-content h3 { @apply text-lg font-bold mt-4 mb-2; }
+.preview-html-content hr { @apply my-8 border-slate-200 dark:border-white/10; }
+
+.daily-reader-markdown {
+  @apply text-[15px] leading-7 text-slate-700 dark:text-slate-300;
+}
+
+.daily-reader-markdown h1 {
+  @apply text-3xl font-bold tracking-normal text-slate-950 dark:text-white mt-0 mb-5 leading-tight;
+}
+
+.daily-reader-markdown h2 {
+  @apply text-xl font-bold tracking-normal text-slate-950 dark:text-white mt-12 mb-5 pt-2 border-t border-slate-200 dark:border-white/10 leading-snug scroll-mt-24;
+}
+
+.daily-reader-markdown h3 {
+  @apply text-lg font-semibold tracking-normal text-slate-900 dark:text-slate-100 mt-8 mb-3 leading-snug scroll-mt-24;
+}
+
+.daily-reader-markdown p {
+  @apply my-4;
+}
+
+.daily-reader-markdown a {
+  @apply text-primary no-underline hover:underline underline-offset-4;
+}
+
+.daily-reader-markdown strong {
+  @apply text-slate-950 dark:text-white font-semibold;
+}
+
+.daily-reader-markdown img {
+  @apply w-full max-w-full rounded-lg my-6;
+}
+
+.daily-reader-markdown blockquote {
+  @apply my-6 border-l-4 border-primary/40 bg-slate-50 dark:bg-white/5 py-3 px-4 rounded-r-lg text-slate-600 dark:text-slate-300;
+}
+
+.daily-reader-markdown pre {
+  @apply rounded-lg bg-slate-950 text-slate-100 p-4 overflow-x-auto text-sm;
+}
+
+.daily-reader-markdown code {
+  @apply rounded bg-slate-100 dark:bg-white/10 px-1.5 py-0.5 text-[0.92em] text-slate-800 dark:text-slate-100;
+}
+
+.daily-editorial-page {
+  --daily-canvas: #f5f5f5;
+  --daily-canvas-soft: #fafafa;
+  --daily-card: #ffffff;
+  --daily-ink: #0c0a09;
+  --daily-primary: #292524;
+  --daily-body: #4e4e4e;
+  --daily-muted: #777169;
+  --daily-muted-soft: #a8a29e;
+  --daily-hairline: #e7e5e4;
+  --daily-hairline-strong: #d6d3d1;
+  background: var(--daily-canvas) !important;
+  color: var(--daily-ink) !important;
+  font-family: Inter, "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.15px;
+}
+
+.daily-editorial-page .daily-editorial-topbar,
+.daily-editorial-page .daily-editorial-footer,
+.daily-editorial-page .daily-doc-toolbar {
+  background: rgba(245, 245, 245, 0.94) !important;
+  border-color: var(--daily-hairline) !important;
+  color: var(--daily-ink) !important;
+  box-shadow: none !important;
+}
+
+.daily-editorial-page .daily-editorial-shell,
+.daily-editorial-page .daily-editorial-main,
+.daily-editorial-page .daily-editorial-scroll {
+  background: var(--daily-canvas) !important;
+  color: var(--daily-ink) !important;
+}
+
+.daily-editorial-page .daily-editorial-topbar h1 {
+  font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+  color: var(--daily-ink) !important;
+}
+
+.daily-editorial-page .daily-editorial-topbar p,
+.daily-editorial-page .daily-editorial-footer span,
+.daily-editorial-page .daily-editorial-footer button,
+.daily-editorial-page .daily-date-rail,
+.daily-editorial-page .daily-reader-toc {
+  color: var(--daily-muted) !important;
+}
+
+.daily-editorial-page .daily-editorial-actions,
+.daily-editorial-page input,
+.daily-editorial-page select,
+.daily-editorial-page textarea {
+  background: var(--daily-card) !important;
+  border-color: var(--daily-hairline) !important;
+  color: var(--daily-ink) !important;
+  box-shadow: none !important;
+}
+
+.daily-editorial-page input,
+.daily-editorial-page select {
+  border-radius: 9999px !important;
+}
+
+.daily-editorial-page .daily-date-rail,
+.daily-editorial-page .daily-reader-toc {
+  background: var(--daily-canvas) !important;
+  border-color: var(--daily-hairline) !important;
+}
+
+.daily-editorial-page .daily-date-rail button,
+.daily-editorial-page .daily-reader-toc a {
+  border-radius: 9999px !important;
+  color: var(--daily-body) !important;
+}
+
+.daily-editorial-page .daily-date-rail button:hover,
+.daily-editorial-page .daily-reader-toc a:hover {
+  background: var(--daily-canvas-soft) !important;
+  color: var(--daily-ink) !important;
+}
+
+.daily-editorial-page .daily-date-rail button.bg-primary,
+.daily-editorial-page .daily-date-rail button[class*="bg-primary"] {
+  background: var(--daily-primary) !important;
+  color: white !important;
+}
+
+.daily-editorial-page .daily-date-rail button.bg-primary *,
+.daily-editorial-page .daily-date-rail button[class*="bg-primary"] * {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.daily-editorial-page .daily-ink-button,
+.daily-editorial-page button.bg-primary,
+.daily-editorial-page button[class*="bg-primary"] {
+  background: var(--daily-primary) !important;
+  color: #fff !important;
+  border-radius: 9999px !important;
+  border: 1px solid var(--daily-primary) !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+}
+
+.daily-editorial-page button.bg-primary:hover,
+.daily-editorial-page button[class*="bg-primary"]:hover,
+.daily-editorial-page .daily-ink-button:hover {
+  background: var(--daily-ink) !important;
+}
+
+.daily-editorial-page .daily-doc-toolbar button {
+  color: var(--daily-muted) !important;
+  border-radius: 9999px !important;
+}
+
+.daily-editorial-page .daily-doc-toolbar button:hover {
+  background: var(--daily-canvas-soft) !important;
+  color: var(--daily-ink) !important;
+}
+
+.daily-editorial-page .daily-doc-toolbar .bg-primary,
+.daily-editorial-page .daily-doc-toolbar [class*="bg-primary"] {
+  background: var(--daily-primary) !important;
+  color: white !important;
+}
+
+.daily-editorial-page .daily-reader-markdown {
+  color: var(--daily-body) !important;
+  font-size: 16px;
+  line-height: 1.68;
+  letter-spacing: 0.16px;
+}
+
+.daily-editorial-page .daily-reader-markdown h1 {
+  font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+  color: var(--daily-ink) !important;
+  font-size: clamp(34px, 4vw, 52px);
+  font-weight: 300;
+  line-height: 1.08;
+  letter-spacing: -0.8px;
+  margin-bottom: 28px;
+}
+
+.daily-editorial-page .daily-reader-markdown h2 {
+  color: var(--daily-ink) !important;
+  font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+  font-size: 30px;
+  font-weight: 300;
+  line-height: 1.18;
+  letter-spacing: -0.32px;
+  border-color: var(--daily-hairline) !important;
+  margin-top: 72px;
+  padding-top: 36px;
+}
+
+.daily-editorial-page .daily-reader-markdown h3 {
+  color: var(--daily-ink) !important;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0;
+  margin-top: 36px;
+}
+
+.daily-editorial-page .daily-reader-markdown strong {
+  color: var(--daily-ink) !important;
+}
+
+.daily-editorial-page .daily-reader-markdown a {
+  color: var(--daily-ink) !important;
+  text-decoration-color: var(--daily-hairline-strong);
+}
+
+.daily-editorial-page .daily-reader-markdown blockquote {
+  background: var(--daily-card) !important;
+  border-color: var(--daily-ink) !important;
+  color: var(--daily-muted) !important;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.daily-editorial-page .daily-reader-markdown pre {
+  background: var(--daily-ink) !important;
+  border-radius: 16px;
+}
+
+.daily-editorial-page .daily-reader-markdown code {
+  background: var(--daily-card) !important;
+  color: var(--daily-ink) !important;
+  border: 1px solid var(--daily-hairline);
+}
+
+.daily-editorial-page .daily-reader-markdown pre code {
+  background: transparent !important;
+  color: #fff !important;
+  border: 0;
+}
+
+.daily-editorial-page .daily-reader-markdown img {
+  border-radius: 16px !important;
+  border: 1px solid var(--daily-hairline) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+
+.daily-editorial-page .daily-reader-toc a {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.daily-editorial-page .text-primary,
+.daily-editorial-page .hover\:text-primary:hover {
+  color: var(--daily-ink) !important;
+}
+
+.daily-editorial-page .bg-primary\/10,
+.daily-editorial-page .bg-primary\/5 {
+  background: var(--daily-canvas-soft) !important;
+}
+
+.daily-editorial-page .border-primary,
+.daily-editorial-page .border-primary\/20 {
+  border-color: var(--daily-hairline-strong) !important;
+}
