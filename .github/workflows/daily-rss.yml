@@ -3,6 +3,8 @@ name: Generate AI Daily
 on:
   workflow_dispatch:
   schedule:
+    # 18:40 Asia/Shanghai, for testing
+    - cron: "40 10 * * *"
     # 07:00 Asia/Shanghai
     - cron: "0 23 * * *"
 
