@@ -30,7 +30,8 @@ function createAiProvider() {
     return new ApimartGeminiProvider(
       process.env.APIMART_BASE_URL || 'https://api.apimart.ai/v1beta',
       apimartKey,
-      process.env.APIMART_MODEL || 'gemini-3.5-flash'
+      process.env.APIMART_MODEL || 'gemini-3.5-flash',
+      Number(process.env.DAILY_AI_TIMEOUT_MS || '45000')
     );
   }
 
@@ -51,6 +52,8 @@ async function main() {
   const noAi = hasFlag('no-ai');
   const noImages = hasFlag('no-images');
   const summaryLimit = Number(getArg('summary-limit') || process.env.DAILY_SUMMARY_LIMIT || '40');
+  const summaryConcurrency = Number(getArg('summary-concurrency') || process.env.DAILY_AI_CONCURRENCY || '3');
+  const summaryTimeoutMs = Number(getArg('summary-timeout-ms') || process.env.DAILY_AI_TIMEOUT_MS || '45000');
   const maxAgeDays = Number(getArg('max-age-days') || '3');
   const assetsRootDir = getArg('assets-dir') || process.env.DAILY_ASSETS_DIR || 'daily-assets';
   const imageMarkdownPrefix = getArg('image-prefix') || process.env.DAILY_IMAGE_PREFIX || '/daily-assets';
@@ -66,6 +69,8 @@ async function main() {
     outputDir,
     aiProvider,
     summaryLimit,
+    summaryConcurrency,
+    summaryTimeoutMs,
     maxAgeDays,
     processImages: !noImages,
     assetsRootDir,

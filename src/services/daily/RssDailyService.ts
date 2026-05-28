@@ -62,6 +62,12 @@ export interface DailyMarkdownInput {
   sourceStatuses: DailyRssSourceStatus[];
 }
 
+export interface SummarizeOptions {
+  limit?: number;
+  concurrency?: number;
+  timeoutMs?: number;
+}
+
 const parser = new Parser({
   customFields: {
     item: [
@@ -309,6 +315,20 @@ export function renderDailyMarkdown(input: DailyMarkdownInput): string {
   return `${lines.join('\n').trim()}\n`;
 }
 
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  let timeout: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
 function buildSummaryPrompt(item: DailyRssItem): string {
   const content = [item.title, item.description, item.content].filter(Boolean).join('\n\n').slice(0, 5000);
   return `请把下面这条英文 AI 资讯整理为中文日报条目。只输出 JSON，不要输出解释。
@@ -326,25 +346,44 @@ JSON 字段：
 ${content}`;
 }
 
-export async function summarizeItems(items: DailyRssItem[], aiProvider?: AIProvider, limit = 20): Promise<DailyRssItem[]> {
+export async function summarizeItems(
+  items: DailyRssItem[],
+  aiProvider?: AIProvider,
+  options: SummarizeOptions = {}
+): Promise<DailyRssItem[]> {
   if (!aiProvider) return items;
+  const provider = aiProvider;
 
-  const result: DailyRssItem[] = [];
-  for (const item of items) {
-    if (result.length >= limit) {
-      result.push(item);
-      continue;
-    }
+  const limit = options.limit ?? 20;
+  const timeoutMs = options.timeoutMs ?? 45000;
+  const concurrency = Math.max(1, Math.min(options.concurrency ?? 3, 8));
+  const result: DailyRssItem[] = [...items];
+  const targetItems = items.slice(0, limit);
+  let nextIndex = 0;
 
+  async function summarizeOne(item: DailyRssItem): Promise<DailyRssItem> {
     try {
-      const response = await aiProvider.generateContent(buildSummaryPrompt(item), [], '你是专业的中文 AI 行业日报编辑。');
+      const response = await withTimeout(
+        provider.generateContent(buildSummaryPrompt(item), [], '你是专业的中文 AI 行业日报编辑。'),
+        timeoutMs,
+        `AI summary for ${item.title}`
+      );
       const parsed = extractJson<DailyRssSummary>(removeMarkdownCodeBlock(response.content));
-      result.push(parsed ? { ...item, summary: parsed } : item);
+      return parsed ? { ...item, summary: parsed } : item;
     } catch {
-      result.push(item);
+      return item;
     }
   }
 
+  async function worker() {
+    while (nextIndex < targetItems.length) {
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+      result[currentIndex] = await summarizeOne(targetItems[currentIndex]);
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(concurrency, targetItems.length) }, () => worker()));
   return result;
 }
 
@@ -355,6 +394,8 @@ export async function generateDailyMarkdown(options: {
   aiProvider?: AIProvider;
   maxAgeDays?: number;
   summaryLimit?: number;
+  summaryConcurrency?: number;
+  summaryTimeoutMs?: number;
   dryRun?: boolean;
   processImages?: boolean;
   assetsRootDir?: string;
@@ -367,7 +408,11 @@ export async function generateDailyMarkdown(options: {
     const priorityB = options.sources.find((source) => source.name === b.sourceName)?.priority || 0;
     return priorityB - priorityA || new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
   });
-  const summarizedItems = await summarizeItems(sortedItems, options.aiProvider, options.summaryLimit ?? 20);
+  const summarizedItems = await summarizeItems(sortedItems, options.aiProvider, {
+    limit: options.summaryLimit ?? 20,
+    concurrency: options.summaryConcurrency ?? 3,
+    timeoutMs: options.summaryTimeoutMs ?? 45000,
+  });
   const finalItems = options.processImages === false
     ? summarizedItems
     : (await processDailyImages(summarizedItems, {

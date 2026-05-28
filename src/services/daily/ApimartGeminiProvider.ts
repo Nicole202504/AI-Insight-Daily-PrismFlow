@@ -24,7 +24,8 @@ export class ApimartGeminiProvider implements AIProvider {
   constructor(
     private readonly baseUrl: string,
     private readonly apiKey: string,
-    private readonly model: string
+    private readonly model: string,
+    private readonly timeoutMs = 45000
   ) {}
 
   async generateContent(prompt: string | AIMessage[], _tools: any[], systemInstruction?: string): Promise<AIResponse> {
@@ -43,14 +44,22 @@ export class ApimartGeminiProvider implements AIProvider {
       },
     ];
 
-    const response = await fetch(`${this.baseUrl.replace(/\/$/, '')}/models/${this.model}:generateContent`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ contents }),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl.replace(/\/$/, '')}/models/${this.model}:generateContent`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ contents }),
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');

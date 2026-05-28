@@ -22,13 +22,16 @@ env:
   OPENAI_MODEL: gpt-4.1-mini
   APIMART_BASE_URL: https://api.apimart.ai/v1beta
   APIMART_MODEL: gemini-3.5-flash
-  DAILY_SUMMARY_LIMIT: "40"
+  DAILY_SUMMARY_LIMIT: "12"
+  DAILY_AI_CONCURRENCY: "3"
+  DAILY_AI_TIMEOUT_MS: "45000"
   DAILY_ASSETS_DIR: daily-assets
   DAILY_IMAGE_PREFIX: /daily-assets
 
 jobs:
   generate:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -48,7 +51,7 @@ jobs:
           APIMART_API_KEY: ${{ secrets.APIMART_API_KEY }}
         run: |
           DATE=$(TZ=Asia/Shanghai date +%F)
-          npm run daily:rss -- --date="$DATE" --max-age-days=3
+          npm run daily:rss -- --date="$DATE" --max-age-days=3 --summary-limit="${DAILY_SUMMARY_LIMIT}" --summary-concurrency="${DAILY_AI_CONCURRENCY}" --summary-timeout-ms="${DAILY_AI_TIMEOUT_MS}"
 
       - name: Commit generated content
         run: |
