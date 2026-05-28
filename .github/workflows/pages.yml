@@ -1,0 +1,98 @@
+name: Deploy Daily Site to Pages
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Generate AI Daily"]
+    types:
+      - completed
+  push:
+    branches: ["main"]
+    paths:
+      - "frontend/**"
+      - "daily/**"
+      - "daily-assets/**"
+      - ".github/workflows/pages.yml"
+      - "package.json"
+      - "package-lock.json"
+      - "version"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      VITE_PUBLIC_DAILY: "true"
+      VITE_BASE_PATH: /AI-Insight-Daily-PrismFlow/
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+
+      - name: Prepare static daily content
+        run: |
+          mkdir -p frontend/public
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const dailyDir = path.join(process.cwd(), 'daily');
+          const dates = fs.existsSync(dailyDir)
+            ? fs.readdirSync(dailyDir)
+                .filter((name) => /^\d{4}-\d{2}-\d{2}\.md$/.test(name))
+                .map((name) => name.replace(/\.md$/, ''))
+                .sort()
+                .reverse()
+            : [];
+          fs.writeFileSync(
+            path.join(process.cwd(), 'frontend/public/daily-index.json'),
+            JSON.stringify({ dates }, null, 2)
+          );
+          NODE
+
+      - name: Build frontend
+        run: npm --prefix frontend run build
+
+      - name: Copy daily content into site
+        run: |
+          cp -R daily frontend/dist/daily
+          cp -R daily-assets frontend/dist/daily-assets
+          cp frontend/dist/index.html frontend/dist/404.html
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

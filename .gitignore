@@ -10,3 +10,4 @@ src/plugins/custom
 *.sqlite
 data/
 .DS_Store
+frontend/public/daily-index.json

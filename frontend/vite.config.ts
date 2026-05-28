@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    base: process.env.VITE_BASE_PATH || '/',
     define: {
       __APP_VERSION__: JSON.stringify(appVersion),
     },

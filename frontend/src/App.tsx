@@ -17,7 +17,8 @@ import Login from './pages/Login';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  const publicDaily = import.meta.env.VITE_PUBLIC_DAILY === 'true';
+  return isAuthenticated || publicDaily ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 function App() {
@@ -25,7 +26,7 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
-          <Router>
+          <Router basename={import.meta.env.BASE_URL}>
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route

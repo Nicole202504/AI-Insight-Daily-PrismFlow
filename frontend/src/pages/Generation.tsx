@@ -11,6 +11,7 @@ import { useToast } from '../context/ToastContext.js';
 import { copyToClipboard as copyToClipboardUtil } from '../utils/clipboardUtils';
 import { getPublisherPlugin } from '../plugins/publishers';
 import { getTodayShanghai } from '../utils/dateUtils';
+import { publicPath } from '../utils/publicPath';
 
 type TocItem = {
   id: string;
@@ -137,9 +138,22 @@ const Generation: React.FC = () => {
   };
 
   useEffect(() => {
-    request('/api/daily')
-      .then((data) => setDailyDates(Array.isArray(data?.dates) ? data.dates : []))
-      .catch(() => setDailyDates([]));
+    fetch(publicPath('daily-index.json'))
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (Array.isArray(data?.dates)) {
+          setDailyDates(data.dates);
+          return;
+        }
+        return request('/api/daily')
+          .then((apiData) => setDailyDates(Array.isArray(apiData?.dates) ? apiData.dates : []))
+          .catch(() => setDailyDates([]));
+      })
+      .catch(() => {
+        request('/api/daily')
+          .then((data) => setDailyDates(Array.isArray(data?.dates) ? data.dates : []))
+          .catch(() => setDailyDates([]));
+      });
   }, []);
 
   // 加载日报正文，优先使用 daily 文件，文件不存在时回退缓存
@@ -152,7 +166,7 @@ const Generation: React.FC = () => {
       setResult(null);
       setStatus('正在加载日报...');
 
-      fetch(`/daily/${date}.md`)
+      fetch(publicPath(`daily/${date}.md`))
         .then(res => res.ok ? res.text() : null)
         .then(text => {
           if (!alive) return;
@@ -635,7 +649,7 @@ const Generation: React.FC = () => {
             <div className="flex items-center justify-end gap-1 sm:gap-1.5">
               {result && (
                 <button 
-                  onClick={() => window.open(`/preview?date=${date}`, '_blank')}
+                  onClick={() => window.open(publicPath(`preview?date=${date}`), '_blank')}
                   className="text-slate-400 hover:text-primary p-1 rounded hover:bg-slate-200 dark:hover:bg-surface-dark transition shrink-0"
                   title="在新标签页中打开预览与编辑"
                 >

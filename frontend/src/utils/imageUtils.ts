@@ -1,8 +1,12 @@
+import { publicAssetUrl } from './publicPath';
+
 export function proxyImageUrl(url: string, proxyTemplate?: string): string {
-  if (!url || !proxyTemplate) return url;
+  if (!url) return url;
   
   // 如果 URL 已经是代理后的，或者是 data: 协议，则跳过
   if (url.startsWith('data:') || url.startsWith('blob:')) return url;
+
+  if (!proxyTemplate) return publicAssetUrl(url);
   
   try {
     // 替换模板中的 {url}
