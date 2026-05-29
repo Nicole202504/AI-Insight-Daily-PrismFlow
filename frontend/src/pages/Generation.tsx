@@ -565,7 +565,7 @@ const Generation: React.FC = () => {
         </div>
       </div>
 
-      <div className="daily-editorial-shell flex-1 grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_240px] xl:grid-cols-[260px_minmax(0,920px)_260px] min-h-0 overflow-hidden bg-white dark:bg-background-dark">
+      <div className="daily-editorial-shell flex-1 grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_220px] 2xl:grid-cols-[260px_minmax(0,1fr)_240px] min-h-0 overflow-hidden bg-white dark:bg-background-dark">
         {/* Left: Date Navigation */}
         <div className="daily-date-rail hidden lg:flex flex-col min-h-0 border-r border-slate-200 dark:border-border-dark bg-slate-50/80 dark:bg-surface-darker/50">
           <div className="px-4 py-4 border-b border-slate-200 dark:border-border-dark">
@@ -686,7 +686,7 @@ const Generation: React.FC = () => {
           <div className={`daily-editorial-scroll flex-1 overflow-auto scroll-smooth ${previewMode === 'preview' ? 'px-5 py-8 sm:px-8 lg:px-10 xl:px-12' : 'p-2 sm:p-3 flex flex-col'}`}>
             {result ? (
               previewMode === 'preview' ? (
-                <article className="mx-auto w-full max-w-[820px]">
+                <article className="mx-auto w-full max-w-[920px]">
                   <ContentRenderer 
                     content={result.daily_summary_markdown} 
                     imageProxy={imageProxy}
