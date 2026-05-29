@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { createHash } from 'crypto';
 import Parser from 'rss-parser';
 import type { AIProvider } from '../AIProvider.js';
 import { extractJson, getISODate, getRandomUserAgent, removeMarkdownCodeBlock, stripHtml, sleep } from '../../utils/helpers.js';
@@ -106,7 +107,8 @@ function canonicalizeUrl(url: string): string {
 
 function stableId(sourceId: string, item: any): string {
   const key = item.guid || item.id || item.link || item.title || `${sourceId}-${Date.now()}`;
-  return `${sourceId}:${Buffer.from(String(key)).toString('base64url').slice(0, 32)}`;
+  const digest = createHash('sha256').update(String(key)).digest('base64url').slice(0, 20);
+  return `${sourceId}:${digest}`;
 }
 
 function extractImageUrl(item: any): string | undefined {
@@ -300,18 +302,6 @@ export function renderDailyMarkdown(input: DailyMarkdownInput): string {
     });
   }
 
-  const failed = input.sourceStatuses.filter((status) => status.status === 'failed');
-  lines.push('---', '', '## 抓取状态', '');
-  lines.push('| 源 | 状态 | 条目数 | 备注 |');
-  lines.push('| --- | --- | ---: | --- |');
-  for (const status of input.sourceStatuses) {
-    lines.push(`| ${escapeMarkdownCell(status.sourceName)} | ${status.status} | ${status.itemCount} | ${escapeMarkdownCell(status.error || status.finalUrl || '')} |`);
-  }
-
-  if (failed.length > 0) {
-    lines.push('', `> 本次有 ${failed.length} 个源抓取失败，日报以降级模式生成。`);
-  }
-
   return `${lines.join('\n').trim()}\n`;
 }
 
@@ -409,7 +399,7 @@ export async function generateDailyMarkdown(options: {
     return priorityB - priorityA || new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
   });
   const summarizedItems = await summarizeItems(sortedItems, options.aiProvider, {
-    limit: options.summaryLimit ?? 20,
+    limit: options.summaryLimit ?? 80,
     concurrency: options.summaryConcurrency ?? 3,
     timeoutMs: options.summaryTimeoutMs ?? 45000,
   });

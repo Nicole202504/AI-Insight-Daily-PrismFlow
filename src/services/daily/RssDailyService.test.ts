@@ -73,6 +73,7 @@ test('renderDailyMarkdown groups items by source group with Chinese headings', (
   assert.match(markdown, /## 社区热点/);
   assert.match(markdown, /OpenAI 发布更新/);
   assert.match(markdown, /HN discusses agents/);
+  assert.doesNotMatch(markdown, /## 抓取状态/);
 });
 
 test('fetchSources returns successful items and failed source status without throwing', async () => {
@@ -115,4 +116,40 @@ test('fetchSources returns successful items and failed source status without thr
   assert.equal(result.items.length, 1);
   assert.equal(result.statuses.find((status) => status.sourceId === 'good')?.status, 'success');
   assert.equal(result.statuses.find((status) => status.sourceId === 'bad')?.status, 'failed');
+});
+
+test('fetchSources gives Atom entries with similar URL prefixes unique stable ids', async () => {
+  const source: DailyRssSource = {
+    id: 'product-hunt',
+    name: 'Product Hunt Daily',
+    url: 'https://example.test/products.xml',
+    group: 'products',
+    enabled: true,
+    maxItems: 5,
+  };
+
+  const result = await fetchSources([source], {
+    now: new Date(`${sampleDate}T08:00:00+08:00`),
+    fetchImpl: async () => new Response(`<?xml version="1.0"?>
+      <feed xmlns="http://www.w3.org/2005/Atom">
+        <title>Products</title>
+        <entry>
+          <id>https://i.buzzing.cc/ph/posts/2026/22/en_ph_2026_05_28__same-long-prefix-alpha/</id>
+          <title>Alpha</title>
+          <published>2026-05-28T00:00:00Z</published>
+          <link rel="alternate" href="https://product.test/a"/>
+          <content type="html"><![CDATA[<img src="https://img.test/a.png">]]></content>
+        </entry>
+        <entry>
+          <id>https://i.buzzing.cc/ph/posts/2026/22/en_ph_2026_05_28__same-long-prefix-beta/</id>
+          <title>Beta</title>
+          <published>2026-05-28T00:00:00Z</published>
+          <link rel="alternate" href="https://product.test/b"/>
+          <content type="html"><![CDATA[<img src="https://img.test/b.png">]]></content>
+        </entry>
+      </feed>`, { status: 200, headers: { 'content-type': 'application/atom+xml' } }),
+  });
+
+  assert.equal(result.items.length, 2);
+  assert.equal(new Set(result.items.map((item) => item.id)).size, 2);
 });
